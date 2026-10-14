@@ -1,0 +1,43 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-broken
+  namespace: agent-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-broken
+  template:
+    metadata:
+      labels:
+        app: nginx-broken
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.28
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'Simulated startup failure'; exit 1"]
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-broken
+  namespace: agent-demo
+spec:
+  selector:
+    app: nginx-broken
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
